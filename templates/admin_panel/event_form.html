@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }} — CompMS{% endblock %}
+{% block content %}
+<div class="wrap">
+  <aside class="side">
+    <div class="side-sec">
+      <div class="side-cap">Admin Panel</div>
+      <a href="{% url 'admin_dashboard' %}" class="side-a">📊 Dashboard</a>
+      <a href="{% url 'admin_events' %}" class="side-a on">🗓 Events</a>
+      <a href="{% url 'admin_registrations' %}" class="side-a">👥 Registrations</a>
+    </div>
+  </aside>
+  <main class="main">
+    <div class="ph">
+      <div class="ph-title">{{ title }}</div>
+      <div class="ph-sub">Fill in the details to {% if event %}update{% else %}publish{% endif %} this event</div>
+    </div>
+
+    <div style="max-width:680px">
+      <form method="post" novalidate>
+        {% csrf_token %}
+
+        {# ── Block 1: Basic info ── #}
+        <div class="card">
+          <div class="card-t">📋 Event Information</div>
+
+          <div class="fg">
+            <label class="lbl">Event Name *</label>
+            <input class="fi" type="text" name="name" required
+                   value="{{ form.name.value|default:'' }}"
+                   placeholder="e.g. Tech Quiz 2025, Code Sprint, Cultural Night"/>
+            {% if form.name.errors %}<div class="err">{{ form.name.errors.0 }}</div>{% endif %}
+          </div>
+
+          <div class="fg">
+            <label class="lbl">Description</label>
+            <textarea class="fi" name="description" rows="3"
+                      placeholder="Brief overview of the event, rules, prizes…">{{ form.description.value|default:'' }}</textarea>
+          </div>
+
+          <div class="fr">
+            <div class="fg">
+              <label class="lbl">Date *</label>
+              <input class="fi" type="date" name="date" required
+                     value="{{ form.date.value|default:'' }}"/>
+              {% if form.date.errors %}<div class="err">{{ form.date.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="fg">
+              <label class="lbl">Venue *</label>
+              <input class="fi" type="text" name="venue" required
+                     value="{{ form.venue.value|default:'' }}"
+                     placeholder="e.g. Main Auditorium, Room 101"/>
+            </div>
+          </div>
+
+          <div class="fr">
+            <div class="fg">
+              <label class="lbl">Category *</label>
+              <select name="category">
+                {% for val,lbl in form.fields.category.choices %}
+                  <option value="{{ val }}" {% if form.category.value == val %}selected{% endif %}>{{ lbl }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="fg">
+              <label class="lbl">Participation Type *</label>
+              <select name="event_type">
+                {% for val,lbl in form.fields.event_type.choices %}
+                  <option value="{{ val }}" {% if form.event_type.value == val %}selected{% endif %}>{{ lbl }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {# ── Block 2: Fee & slots ── #}
+        <div class="card">
+          <div class="card-t">💳 Registration & Capacity</div>
+          <div class="fr">
+            <div class="fg">
+              <label class="lbl">Registration Fee (₹) *</label>
+              <input class="fi" type="number" name="registration_fee"
+                     value="{{ form.registration_fee.value|default:'' }}"
+                     min="0" step="1" placeholder="0 for free"/>
+              {% if form.registration_fee.errors %}<div class="err">{{ form.registration_fee.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="fg">
+              <label class="lbl">Max Participants *</label>
+              <input class="fi" type="number" name="max_participants"
+                     value="{{ form.max_participants.value|default:'100' }}" min="1"/>
+            </div>
+          </div>
+          <div class="fg">
+            <label class="lbl">UPI ID (students pay here)</label>
+            <input class="fi" type="text" name="upi_id"
+                   value="{{ form.upi_id.value|default:'college@upi' }}"
+                   placeholder="yourname@upi"/>
+            <div class="hint">Students will see this UPI ID when uploading payment proof.</div>
+          </div>
+        </div>
+
+        {# ── Block 3: Visibility ── #}
+        <div class="card" style="padding:16px 20px">
+          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13.5px;font-weight:500">
+            <input type="checkbox" name="is_active" style="width:16px;height:16px"
+                   {% if form.is_active.value != False %}checked{% endif %}/>
+            <div>
+              <div>Publish event (visible to students)</div>
+              <div style="font-size:12px;color:var(--muted);font-weight:400">Uncheck to save as draft</div>
+            </div>
+          </label>
+        </div>
+
+        <div class="row mt4">
+          <button type="submit" class="btn btn-p btn-lg">
+            {% if event %}💾 Save Changes{% else %}✅ Create Event{% endif %}
+          </button>
+          <a href="{% url 'admin_events' %}" class="btn btn-o btn-lg">Cancel</a>
+        </div>
+
+      </form>
+    </div>
+  </main>
+</div>
+{% endblock %}

@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+{% block title %}Verify Payment — Admin{% endblock %}
+{% block content %}
+<div class="wrap">
+  <aside class="side">
+    <div class="side-sec">
+      <div class="side-cap">Admin Panel</div>
+      <a href="{% url 'admin_dashboard' %}" class="side-a">📊 Dashboard</a>
+      <a href="{% url 'admin_events' %}" class="side-a">🗓 Events</a>
+      <a href="{% url 'admin_registrations' %}" class="side-a on">👥 Registrations</a>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="ph">
+      <div class="ph-title">Verify Payment</div>
+      <div class="ph-sub">Check the screenshot and approve or reject below</div>
+    </div>
+
+    <div class="g2" style="max-width:900px">
+
+      {# ── Left: Student info + screenshot ── #}
+      <div>
+        <div class="card">
+          <div class="card-t">👤 Student & Registration</div>
+
+          <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--border)">
+            <div style="width:48px;height:48px;border-radius:50%;background:#EFF6FF;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;color:var(--blue);flex-shrink:0">
+              {{ reg.student.first_name|first|upper }}{{ reg.student.last_name|first|upper }}
+            </div>
+            <div>
+              <div style="font-size:16px;font-weight:800">{{ reg.student.get_full_name }}</div>
+              <div style="font-size:13px;color:var(--muted)">{{ reg.student.email }}</div>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:100px 1fr;row-gap:8px;font-size:13.5px">
+            <span class="muted">College</span>
+            <span>{% if reg.student.profile.college %}{{ reg.student.profile.college }}{% else %}—{% endif %}</span>
+            <span class="muted">Event</span>
+            <span style="font-weight:700">{{ reg.event.name }}</span>
+            <span class="muted">Date</span>
+            <span>{{ reg.event.date|date:"d F Y" }}</span>
+            <span class="muted">Type</span>
+            <span>
+              <span class="badge b-blue">{{ reg.get_participation_type_display }}</span>
+              {% if reg.group_name %} — <strong>{{ reg.group_name }}</strong>{% endif %}
+            </span>
+            {% if reg.member_names %}
+            <span class="muted" style="align-self:start">Members</span>
+            <span style="line-height:1.8">
+              {% for m in reg.get_member_list %}<div>• {{ m }}</div>{% endfor %}
+            </span>
+            {% endif %}
+            <span class="muted">Amount</span>
+            <span style="font-size:20px;font-weight:800;color:var(--blue)">₹{{ reg.event.registration_fee }}</span>
+            <span class="muted">Uploaded</span>
+            <span>{{ reg.payment_uploaded_at|date:"d M Y, H:i"|default:"—" }}</span>
+          </div>
+        </div>
+
+        {# Screenshot #}
+        <div class="card">
+          <div class="card-t">📸 Payment Screenshot</div>
+          {% if reg.payment_screenshot %}
+            <img src="{{ reg.payment_screenshot.url }}" alt="Payment proof"
+                 style="width:100%;border-radius:8px;border:1px solid var(--border);display:block"/>
+            <a href="{{ reg.payment_screenshot.url }}" target="_blank"
+               class="btn btn-o btn-sm mt8">Open full size ↗</a>
+          {% else %}
+            <div style="background:var(--soft);border-radius:8px;padding:32px;text-align:center;color:var(--muted)">
+              No screenshot uploaded
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      {# ── Right: Decision form ── #}
+      <div>
+        <div class="card" style="position:sticky;top:68px">
+          <div class="card-t">⚖️ Your Decision</div>
+
+          <div style="background:var(--amber-bg);border:1px solid var(--amber-bd);border-radius:8px;padding:12px 14px;margin-bottom:18px;font-size:13px;color:var(--amber)">
+            ⚠️ Once verified, a unique QR/participant code is automatically generated. Once rejected, the student will be asked to re-upload.
+          </div>
+
+          <form method="post" novalidate>
+            {% csrf_token %}
+
+            <div class="fg">
+              <label class="lbl">Decision *</label>
+              {% for choice in form.decision %}
+              <label style="display:flex;align-items:center;gap:10px;padding:12px 14px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;margin-bottom:8px;font-size:14px;font-weight:500;transition:.15s" onmouseover="this.style.borderColor='var(--blue)'" onmouseout="this.style.borderColor='var(--border)'">
+                {{ choice.tag }}
+                <span>{{ choice.choice_label }}</span>
+              </label>
+              {% endfor %}
+              {% if form.decision.errors %}<div class="err">{{ form.decision.errors.0 }}</div>{% endif %}
+            </div>
+
+            <div class="fg">
+              <label class="lbl">Rejection Reason <span class="muted">(required if rejecting)</span></label>
+              <textarea class="fi" name="rejection_reason" rows="3"
+                        placeholder="e.g. Screenshot is blurry, wrong amount, wrong reference…">{{ form.rejection_reason.value|default:'' }}</textarea>
+              {% if form.rejection_reason.errors %}<div class="err">{{ form.rejection_reason.errors.0 }}</div>{% endif %}
+            </div>
+
+            <div class="row">
+              <button type="submit" class="btn btn-p btn-lg" style="flex:1;justify-content:center">Submit Decision</button>
+              <a href="{% url 'admin_registrations' %}" class="btn btn-o btn-lg">Cancel</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+{% endblock %}

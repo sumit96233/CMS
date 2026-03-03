@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+{% block title %}Admin Dashboard — CompMS{% endblock %}
+{% block content %}
+<div class="wrap">
+
+  {# ── Sidebar ── #}
+  <aside class="side">
+    <div class="side-sec">
+      <div class="side-cap">Admin Panel</div>
+      <a href="{% url 'admin_dashboard' %}" class="side-a on">📊 Dashboard</a>
+      <a href="{% url 'admin_events' %}" class="side-a">🗓 Events</a>
+      <a href="{% url 'admin_registrations' %}" class="side-a">
+        👥 Registrations
+        {% if pending_count > 0 %}<span class="side-badge">{{ pending_count }}</span>{% endif %}
+      </a>
+    </div>
+  </aside>
+
+  {# ── Main ── #}
+  <main class="main">
+    <div class="ph">
+      <div class="ph-title">Dashboard</div>
+      <div class="ph-sub">Welcome back, {{ request.user.get_full_name }}. Here's your overview.</div>
+    </div>
+
+    {# Stats #}
+    <div class="stats">
+      <div class="stat" style="--accent:#1D4ED8">
+        <div class="stat-lbl">Active Events</div>
+        <div class="stat-val">{{ active_events }}</div>
+        <div class="stat-hint">{{ total_events }} total</div>
+        <div class="stat-ico">🗓</div>
+      </div>
+      <div class="stat" style="--accent:#15803D">
+        <div class="stat-lbl">Total Registrations</div>
+        <div class="stat-val">{{ total_regs }}</div>
+        <div class="stat-ico">📝</div>
+      </div>
+      <div class="stat" style="--accent:#D97706">
+        <div class="stat-lbl">Pending Payments</div>
+        <div class="stat-val">{{ pending_count }}</div>
+        <div class="stat-hint">{% if pending_count %}Needs action{% else %}All clear ✓{% endif %}</div>
+        <div class="stat-ico">💳</div>
+      </div>
+      <div class="stat" style="--accent:#7C3AED">
+        <div class="stat-lbl">Verified Payments</div>
+        <div class="stat-val">{{ verified_count }}</div>
+        <div class="stat-ico">✅</div>
+      </div>
+    </div>
+
+    <div class="g2">
+      {# Pending payments queue #}
+      <div class="card">
+        <div class="between mb12">
+          <div class="card-t" style="margin-bottom:0">⏳ Pending Verifications</div>
+          <a href="{% url 'admin_registrations' %}?status=pending" class="btn btn-sm btn-o">View all</a>
+        </div>
+        {% for reg in pending_regs %}
+        <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #F0EDE8">
+          <div style="width:36px;height:36px;border-radius:50%;background:var(--soft);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0">
+            {{ reg.student.first_name|first|upper }}{{ reg.student.last_name|first|upper }}
+          </div>
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:600;font-size:13.5px">{{ reg.student.get_full_name }}</div>
+            <div style="font-size:12px;color:var(--muted)">{{ reg.event.name }}</div>
+          </div>
+          <div style="font-weight:800;margin-right:8px">₹{{ reg.event.registration_fee }}</div>
+          <a href="{% url 'admin_verify' reg.pk %}" class="btn btn-sm btn-g">Verify</a>
+        </div>
+        {% empty %}
+        <div style="padding:20px 0;text-align:center;color:var(--muted)">No pending payments 🎉</div>
+        {% endfor %}
+      </div>
+
+      {# Recent registrations #}
+      <div class="card">
+        <div class="between mb12">
+          <div class="card-t" style="margin-bottom:0">🕐 Recent Registrations</div>
+          <a href="{% url 'admin_registrations' %}" class="btn btn-sm btn-o">View all</a>
+        </div>
+        {% for reg in recent_regs %}
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #F0EDE8">
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ reg.student.get_full_name }}</div>
+            <div style="font-size:12px;color:var(--muted)">{{ reg.event.name }} · {{ reg.registered_at|date:"d M, H:i" }}</div>
+          </div>
+          {% with reg.status_label as sl %}
+          <span class="badge b-{{ sl.0 }}">{{ sl.1 }}</span>
+          {% endwith %}
+        </div>
+        {% empty %}
+        <div style="padding:20px 0;text-align:center;color:var(--muted)">No registrations yet</div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="between mt8">
+      <a href="{% url 'admin_events' %}" class="btn btn-o">🗓 Manage Events</a>
+      <a href="{% url 'admin_event_create' %}" class="btn btn-p">+ Create New Event</a>
+    </div>
+  </main>
+</div>
+{% endblock %}

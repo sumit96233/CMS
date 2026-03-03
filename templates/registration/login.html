@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block title %}Login — CompMS{% endblock %}
+{% block content %}
+<div class="auth-page">
+  <div class="auth-box">
+    <div style="text-align:center;margin-bottom:28px">
+      <div style="font-size:40px">⚡</div>
+      <div style="font-size:22px;font-weight:800;margin-top:6px">CompMS</div>
+      <div style="font-size:13px;color:var(--muted);margin-top:3px">Competition Management System</div>
+    </div>
+
+    <form method="post" novalidate>
+      {% csrf_token %}
+      <div class="fg">
+        <label class="lbl">Username</label>
+        <input class="fi" type="text" name="username" autofocus required
+               value="{{ form.username.value|default:'' }}" placeholder="your-username"/>
+        {% if form.username.errors %}<div class="err">{{ form.username.errors.0 }}</div>{% endif %}
+      </div>
+      <div class="fg">
+        <label class="lbl">Password</label>
+        <input class="fi" type="password" name="password" required placeholder="••••••••"/>
+        {% if form.non_field_errors %}<div class="err">{{ form.non_field_errors.0 }}</div>{% endif %}
+      </div>
+      <button type="submit" class="btn btn-p btn-lg" style="width:100%;justify-content:center">Login →</button>
+    </form>
+
+    <div style="text-align:center;margin-top:16px;font-size:13px;color:var(--muted)">
+      New student? <a href="{% url 'signup' %}" style="color:var(--blue);font-weight:600">Create account</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

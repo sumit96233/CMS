@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% block title %}Sign Up — CompMS{% endblock %}
+{% block content %}
+<div class="auth-page" style="padding:32px 0">
+  <div class="auth-box" style="max-width:500px">
+    <div style="font-size:20px;font-weight:800;margin-bottom:4px">🎓 Student Registration</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:24px">Create your account to register for events</div>
+
+    <form method="post" novalidate>
+      {% csrf_token %}
+      <div class="fr">
+        <div class="fg">
+          <label class="lbl">First Name *</label>
+          <input class="fi" type="text" name="first_name" required value="{{ form.first_name.value|default:'' }}"/>
+          {% if form.first_name.errors %}<div class="err">{{ form.first_name.errors.0 }}</div>{% endif %}
+        </div>
+        <div class="fg">
+          <label class="lbl">Last Name *</label>
+          <input class="fi" type="text" name="last_name" required value="{{ form.last_name.value|default:'' }}"/>
+          {% if form.last_name.errors %}<div class="err">{{ form.last_name.errors.0 }}</div>{% endif %}
+        </div>
+      </div>
+      <div class="fg">
+        <label class="lbl">Email *</label>
+        <input class="fi" type="email" name="email" required value="{{ form.email.value|default:'' }}"/>
+        {% if form.email.errors %}<div class="err">{{ form.email.errors.0 }}</div>{% endif %}
+      </div>
+      <div class="fr">
+        <div class="fg">
+          <label class="lbl">College *</label>
+          <input class="fi" type="text" name="college" required value="{{ form.college.value|default:'' }}" placeholder="Your college name"/>
+          {% if form.college.errors %}<div class="err">{{ form.college.errors.0 }}</div>{% endif %}
+        </div>
+        <div class="fg">
+          <label class="lbl">Phone *</label>
+          <input class="fi" type="text" name="phone" required value="{{ form.phone.value|default:'' }}" placeholder="10-digit number"/>
+          {% if form.phone.errors %}<div class="err">{{ form.phone.errors.0 }}</div>{% endif %}
+        </div>
+      </div>
+      <div class="fg">
+        <label class="lbl">Username *</label>
+        <input class="fi" type="text" name="username" required value="{{ form.username.value|default:'' }}" placeholder="Unique login name"/>
+        {% if form.username.errors %}<div class="err">{{ form.username.errors.0 }}</div>{% endif %}
+      </div>
+      <div class="fr">
+        <div class="fg">
+          <label class="lbl">Password *</label>
+          <input class="fi" type="password" name="password1" required/>
+          {% if form.password1.errors %}<div class="err">{{ form.password1.errors.0 }}</div>{% endif %}
+        </div>
+        <div class="fg">
+          <label class="lbl">Confirm Password *</label>
+          <input class="fi" type="password" name="password2" required/>
+          {% if form.password2.errors %}<div class="err">{{ form.password2.errors.0 }}</div>{% endif %}
+        </div>
+      </div>
+      <button type="submit" class="btn btn-p btn-lg" style="width:100%;justify-content:center">Create Account →</button>
+    </form>
+    <div style="text-align:center;margin-top:14px;font-size:13px;color:var(--muted)">
+      Already have an account? <a href="{% url 'login' %}" style="color:var(--blue);font-weight:600">Login</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

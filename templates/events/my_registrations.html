@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+{% block title %}My Registrations — CompMS{% endblock %}
+{% block content %}
+<div class="wrap">
+  <aside class="side">
+    <div class="side-sec">
+      <a href="{% url 'event_list' %}" class="side-a">🗓 Browse Events</a>
+      <a href="{% url 'my_registrations' %}" class="side-a on">📝 My Registrations</a>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="ph">
+      <div class="ph-title">My Registrations</div>
+      <div class="ph-sub">Track your registration and payment status</div>
+    </div>
+
+    {% for reg in regs %}
+    <div class="card">
+      {# Header row #}
+      <div class="between mb12" style="padding-bottom:12px;border-bottom:1px solid var(--border)">
+        <div>
+          <div style="font-size:17px;font-weight:800">{{ reg.event.name }}</div>
+          <div style="font-size:13px;color:var(--muted);margin-top:2px">
+            📅 {{ reg.event.date|date:"l, d F Y" }} &nbsp;·&nbsp; 📍 {{ reg.event.venue }}
+          </div>
+        </div>
+        {% with reg.status_label as sl %}
+          <span class="badge b-{{ sl.0 }}" style="font-size:13px;padding:5px 14px">{{ sl.1 }}</span>
+        {% endwith %}
+      </div>
+
+      <div class="g2">
+        {# Status timeline #}
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Progress</div>
+          <div class="tl">
+            <div class="tl-item">
+              <div class="tl-dot done"></div>
+              <div class="tl-t">Form Submitted</div>
+              <div class="tl-m">{{ reg.registered_at|date:"d M Y, H:i" }}</div>
+            </div>
+
+            <div class="tl-item">
+              <div class="tl-dot {% if reg.payment_screenshot %}done{% else %}warn{% endif %}"></div>
+              <div class="tl-t">Payment Screenshot</div>
+              <div class="tl-m">
+                {% if reg.payment_screenshot %}
+                  Uploaded {{ reg.payment_uploaded_at|date:"d M, H:i" }}
+                {% else %}
+                  <span style="color:#D97706">Not uploaded yet</span>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="tl-item">
+              <div class="tl-dot {% if reg.payment_status == 'verified' %}done{% elif reg.payment_status == 'rejected' %}{% else %}wait{% endif %}"></div>
+              <div class="tl-t">Admin Verification</div>
+              <div class="tl-m">
+                {% if reg.payment_status == 'verified' %}
+                  Verified on {{ reg.verified_at|date:"d M Y" }}
+                {% elif reg.payment_status == 'rejected' %}
+                  <span style="color:var(--red)">Rejected — {{ reg.rejection_reason|default:"See admin" }}</span>
+                {% else %}
+                  Waiting for admin review
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="tl-item">
+              <div class="tl-dot {% if reg.unique_code %}done{% else %}wait{% endif %}"></div>
+              <div class="tl-t">QR Code / Unique Code</div>
+              <div class="tl-m">
+                {% if reg.unique_code %}
+                  Generated: <code>{{ reg.unique_code }}</code>
+                {% else %}
+                  Generated after payment is verified
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {# Details + actions #}
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Details</div>
+          <div style="font-size:13.5px;line-height:2.2">
+            <div><span class="muted">Type:</span> <strong>{{ reg.get_participation_type_display }}</strong>{% if reg.group_name %} — {{ reg.group_name }}{% endif %}</div>
+            <div><span class="muted">Fee:</span> <strong>₹{{ reg.event.registration_fee }}</strong></div>
+          </div>
+
+          {% if reg.unique_code %}
+          <div style="margin-top:14px;background:var(--ink);color:#fff;border-radius:10px;padding:14px;text-align:center">
+            <div style="font-size:10px;opacity:.5;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:4px">Your Unique Code</div>
+            <div style="font-size:24px;font-weight:800;letter-spacing:4px">{{ reg.unique_code }}</div>
+            <div style="font-size:11px;opacity:.4;margin-top:4px">Show this to the judge on event day</div>
+          </div>
+          {% endif %}
+
+          <div class="mt12">
+            {% if reg.payment_status == 'not_uploaded' %}
+              <a href="{% url 'upload_payment' reg.pk %}" class="btn btn-p btn-sm">📸 Upload Payment</a>
+            {% elif reg.payment_status == 'rejected' %}
+              <a href="{% url 'upload_payment' reg.pk %}" class="btn btn-r btn-sm">🔄 Re-upload Screenshot</a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <div class="card" style="text-align:center;padding:48px">
+      <div style="font-size:40px;margin-bottom:10px">📝</div>
+      <div style="font-size:16px;font-weight:700">No registrations yet</div>
+      <div class="muted mt4 mb12">Browse events and register to get started</div>
+      <a href="{% url 'event_list' %}" class="btn btn-p">Browse Events →</a>
+    </div>
+    {% endfor %}
+  </main>
+</div>
+{% endblock %}

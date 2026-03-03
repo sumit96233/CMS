@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+{% block title %}Register — {{ event.name }}{% endblock %}
+{% block content %}
+<div class="wrap">
+  <aside class="side">
+    <div class="side-sec">
+      <a href="{% url 'event_list' %}" class="side-a">🗓 Browse Events</a>
+      <a href="{% url 'my_registrations' %}" class="side-a">📝 My Registrations</a>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="ph">
+      <div class="ph-title">Register for Event</div>
+      <div class="ph-sub">Fill in your details to participate</div>
+    </div>
+
+    <div class="g2" style="max-width:860px">
+
+      {# Event summary #}
+      <div>
+        <div class="card">
+          <div class="card-t">🗓 Event Details</div>
+          <div style="display:flex;gap:12px;margin-bottom:16px">
+            <div class="ev-date" style="width:52px;height:54px;border-radius:9px;flex-shrink:0">
+              <div class="ev-day">{{ event.date|date:"d" }}</div>
+              <div class="ev-mon">{{ event.date|date:"M"|upper }}</div>
+            </div>
+            <div>
+              <div style="font-size:17px;font-weight:800">{{ event.name }}</div>
+              <div style="font-size:13px;color:var(--muted)">{{ event.venue }}</div>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:90px 1fr;row-gap:8px;font-size:13.5px">
+            <span class="muted">Date</span>    <span>{{ event.date|date:"l, d F Y" }}</span>
+            <span class="muted">Category</span><span><span class="badge b-blue">{{ event.get_category_display }}</span></span>
+            <span class="muted">Type</span>    <span>{{ event.get_event_type_display }}</span>
+            <span class="muted">Slots</span>   <span>{{ event.slots_left }} remaining</span>
+            <span class="muted">Fee</span>     <span style="font-size:20px;font-weight:800;color:var(--blue)">₹{{ event.registration_fee }}</span>
+          </div>
+        </div>
+
+        <div class="card" style="background:var(--amber-bg);border-color:var(--amber-bd)">
+          <div style="font-size:13.5px;color:var(--amber);line-height:1.9">
+            <strong>📋 Next steps after registering:</strong>
+            <ol style="padding-left:16px;margin-top:6px">
+              <li>You'll be prompted to upload payment screenshot</li>
+              <li>Pay <strong>₹{{ event.registration_fee }}</strong> to UPI: <strong>{{ event.upi_id }}</strong></li>
+              <li>Admin verifies your payment</li>
+              <li>Unique QR code generated — show it on event day</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+
+      {# Registration form #}
+      <div class="card">
+        <div class="card-t">📝 Your Participation</div>
+        <form method="post" id="regForm" novalidate>
+          {% csrf_token %}
+
+          <div class="fg">
+            <label class="lbl">Participation Type *</label>
+            <select name="participation_type" id="ptype" onchange="toggleGroup()">
+              {% for val,lbl in form.fields.participation_type.choices %}
+                <option value="{{ val }}" {% if form.participation_type.value == val %}selected{% endif %}>{{ lbl }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div id="grpFields" style="display:none">
+            <div class="fg">
+              <label class="lbl">Team / Group Name *</label>
+              <input class="fi" type="text" name="group_name"
+                     value="{{ form.group_name.value|default:'' }}"
+                     placeholder="e.g. Team Phoenix"/>
+              {% if form.group_name.errors %}<div class="err">{{ form.group_name.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="fg">
+              <label class="lbl">All Member Names *</label>
+              <textarea class="fi" name="member_names" rows="3"
+                        placeholder="Rahul Sharma, Priya Nair, Aman Verma">{{ form.member_names.value|default:'' }}</textarea>
+              <div class="hint">Separate each name with a comma. Include yourself.</div>
+              {% if form.member_names.errors %}<div class="err">{{ form.member_names.errors.0 }}</div>{% endif %}
+            </div>
+          </div>
+
+          {% if form.non_field_errors %}
+            <div class="err mb8">{{ form.non_field_errors.0 }}</div>
+          {% endif %}
+
+          <button type="submit" class="btn btn-p btn-lg" style="width:100%;justify-content:center">
+            Register & Upload Payment →
+          </button>
+        </form>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+function toggleGroup(){
+  var v = document.getElementById('ptype').value;
+  document.getElementById('grpFields').style.display = v === 'group' ? 'block' : 'none';
+}
+toggleGroup();
+</script>
+{% endblock %}

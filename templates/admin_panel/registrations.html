@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+{% block title %}Registrations — Admin{% endblock %}
+{% block content %}
+<div class="wrap">
+  <aside class="side">
+    <div class="side-sec">
+      <div class="side-cap">Admin Panel</div>
+      <a href="{% url 'admin_dashboard' %}" class="side-a">📊 Dashboard</a>
+      <a href="{% url 'admin_events' %}" class="side-a">🗓 Events</a>
+      <a href="{% url 'admin_registrations' %}" class="side-a on">
+        👥 Registrations
+        {% if pending_count %}<span class="side-badge">{{ pending_count }}</span>{% endif %}
+      </a>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="ph">
+      <div class="ph-title">Registrations</div>
+      <div class="ph-sub">All student registrations — verify payments here</div>
+    </div>
+
+    {# ── Filter bar ── #}
+    <form method="get">
+      <div class="card" style="padding:14px 18px;margin-bottom:18px">
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
+          <div style="flex:2;min-width:160px">
+            <label class="lbl">Search</label>
+            <input class="fi" type="text" name="q" value="{{ q }}" placeholder="Name, email or QR code"/>
+          </div>
+          <div style="flex:1;min-width:140px">
+            <label class="lbl">Event</label>
+            <select name="event">
+              <option value="">All Events</option>
+              {% for ev in events %}
+                <option value="{{ ev.pk }}" {% if sel_event == ev.pk|stringformat:"s" %}selected{% endif %}>{{ ev.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div style="flex:1;min-width:140px">
+            <label class="lbl">Payment Status</label>
+            <select name="status">
+              <option value="">All Statuses</option>
+              {% for val,lbl in status_opts %}
+                <option value="{{ val }}" {% if sel_status == val %}selected{% endif %}>{{ lbl }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="row" style="padding-bottom:1px">
+            <button type="submit" class="btn btn-p">Filter</button>
+            <a href="{% url 'admin_registrations' %}" class="btn btn-o">Clear</a>
+          </div>
+        </div>
+      </div>
+    </form>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th><th>Student</th><th>Event</th><th>Type</th>
+            <th>Screenshot</th><th>Payment</th><th>QR Code</th><th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for reg in regs %}
+          <tr>
+            <td class="muted" style="font-size:12px">#{{ reg.pk }}</td>
+            <td>
+              <div style="font-weight:700">{{ reg.student.get_full_name }}</div>
+              <small class="muted">{{ reg.student.email }}</small>
+              {% if reg.student.profile.college %}
+                <br/><small class="muted">{{ reg.student.profile.college }}</small>
+              {% endif %}
+            </td>
+            <td>
+              <div style="font-weight:600">{{ reg.event.name }}</div>
+              <small class="muted">{{ reg.registered_at|date:"d M Y" }}</small>
+            </td>
+            <td>
+              <span class="badge b-blue">{{ reg.get_participation_type_display }}</span>
+              {% if reg.group_name %}<br/><small>{{ reg.group_name }}</small>{% endif %}
+            </td>
+            <td>
+              {% if reg.payment_screenshot %}
+                <a href="{{ reg.payment_screenshot.url }}" target="_blank" class="btn btn-sm btn-o">📸 View</a>
+              {% else %}
+                <span class="muted" style="font-size:12px">—</span>
+              {% endif %}
+            </td>
+            <td>
+              {% with reg.status_label as sl %}
+                <span class="badge b-{{ sl.0 }}">{{ sl.1 }}</span>
+              {% endwith %}
+              {% if reg.verified_at %}
+                <br/><small class="muted">{{ reg.verified_at|date:"d M, H:i" }}</small>
+              {% endif %}
+            </td>
+            <td>
+              {% if reg.unique_code %}
+                <code>{{ reg.unique_code }}</code>
+              {% else %}
+                <span class="muted" style="font-size:12px">Not yet</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if reg.payment_status == 'pending' %}
+                <a href="{% url 'admin_verify' reg.pk %}" class="btn btn-sm btn-g">Verify</a>
+              {% elif reg.payment_status == 'not_uploaded' %}
+                <span class="muted" style="font-size:12px">Awaiting upload</span>
+              {% else %}
+                <span class="muted" style="font-size:12px">Done</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="8" style="text-align:center;padding:40px;color:var(--muted)">No registrations found.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </main>
+</div>
+{% endblock %}

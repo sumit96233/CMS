@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% block title %}Browse Events — CompMS{% endblock %}
+{% block content %}
+<div class="wrap">
+  <aside class="side">
+    <div class="side-sec">
+      <div class="side-cap">Student</div>
+      <a href="{% url 'event_list' %}" class="side-a on">🗓 Browse Events</a>
+      <a href="{% url 'my_registrations' %}" class="side-a">📝 My Registrations</a>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="ph">
+      <div class="ph-title">Browse Events</div>
+      <div class="ph-sub">Find and register for competitions — Hello, {{ request.user.first_name }}! 👋</div>
+    </div>
+
+    {# Search / filter #}
+    <form method="get" style="margin-bottom:20px">
+      <div class="row" style="flex-wrap:wrap;gap:8px">
+        <input class="fi" type="text" name="q" value="{{ q }}"
+               placeholder="Search by name…" style="max-width:260px"/>
+        <select name="category" style="max-width:180px">
+          <option value="">All Categories</option>
+          {% for val,lbl in categories %}
+            <option value="{{ val }}" {% if category == val %}selected{% endif %}>{{ lbl }}</option>
+          {% endfor %}
+        </select>
+        <button type="submit" class="btn btn-p">Search</button>
+        {% if q or category %}<a href="{% url 'event_list' %}" class="btn btn-o">Clear</a>{% endif %}
+      </div>
+    </form>
+
+    {% for ev in events %}
+    <div class="ev-card">
+      <div class="ev-date">
+        <div class="ev-day">{{ ev.date|date:"d" }}</div>
+        <div class="ev-mon">{{ ev.date|date:"M"|upper }}</div>
+      </div>
+      <div class="ev-info">
+        <div class="ev-name">{{ ev.name }}</div>
+        <div class="ev-meta">
+          <span>{{ ev.get_category_display }}</span>
+          <span>📍 {{ ev.venue }}</span>
+          <span>{{ ev.get_event_type_display }}</span>
+          <span>{{ ev.slots_left }} slot{% if ev.slots_left != 1 %}s{% endif %} left</span>
+        </div>
+        {% if ev.description %}
+          <div style="font-size:12.5px;color:var(--muted);margin-top:5px">{{ ev.description|truncatechars:120 }}</div>
+        {% endif %}
+      </div>
+      <div style="text-align:right;flex-shrink:0">
+        <div class="ev-fee">₹{{ ev.registration_fee }}</div>
+        <div class="mt8">
+          {% if ev.pk in my_ids %}
+            <span class="badge b-green" style="font-size:12px;padding:5px 12px">✓ Registered</span>
+          {% elif ev.slots_left == 0 %}
+            <span class="badge b-red" style="font-size:12px;padding:5px 12px">Full</span>
+          {% else %}
+            <a href="{% url 'register_event' ev.pk %}" class="btn btn-p btn-sm">Register →</a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <div class="card" style="text-align:center;padding:48px">
+      <div style="font-size:40px;margin-bottom:10px">🗓</div>
+      <div style="font-size:16px;font-weight:700">No events available right now</div>
+      <div class="muted mt4">Check back soon for upcoming competitions.</div>
+    </div>
+    {% endfor %}
+  </main>
+</div>
+{% endblock %}

@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% block title %}Upload Payment — CompMS{% endblock %}
+{% block content %}
+<div class="wrap">
+  <aside class="side">
+    <div class="side-sec">
+      <a href="{% url 'event_list' %}" class="side-a">🗓 Browse Events</a>
+      <a href="{% url 'my_registrations' %}" class="side-a">📝 My Registrations</a>
+    </div>
+  </aside>
+  <main class="main">
+    <div class="ph">
+      <div class="ph-title">Upload Payment Proof</div>
+      <div class="ph-sub">{{ reg.event.name }} — ₹{{ reg.event.registration_fee }}</div>
+    </div>
+
+    <div style="max-width:520px">
+
+      {# UPI instructions #}
+      <div class="card" style="background:#EFF6FF;border-color:#BFDBFE;margin-bottom:16px">
+        <div style="font-size:15px;font-weight:700;color:var(--blue);margin-bottom:8px">💳 Payment Instructions</div>
+        <div style="font-size:13.5px;color:#1E40AF;line-height:2">
+          Amount: <strong style="font-size:18px">₹{{ reg.event.registration_fee }}</strong><br/>
+          Pay to UPI ID: <strong style="font-size:16px;letter-spacing:.5px">{{ reg.event.upi_id }}</strong><br/>
+          Use PhonePe / GPay / Paytm — then take a screenshot.
+        </div>
+      </div>
+
+      {# Existing screenshot preview #}
+      {% if reg.payment_screenshot %}
+      <div class="card" style="background:var(--green-bg);border-color:var(--green-bd);margin-bottom:16px">
+        <div style="font-size:13.5px;color:var(--green);font-weight:600">
+          ✓ Screenshot already uploaded. You can replace it below.
+        </div>
+        <img src="{{ reg.payment_screenshot.url }}" alt="Current screenshot"
+             style="width:100%;margin-top:10px;border-radius:8px;border:1px solid var(--border)"/>
+      </div>
+      {% endif %}
+
+      {# Upload form #}
+      <div class="card">
+        <div class="card-t">📸 Upload Screenshot</div>
+        <form method="post" enctype="multipart/form-data" novalidate>
+          {% csrf_token %}
+          <div class="fg">
+            <div class="upzone" onclick="document.getElementById('ssFile').click()">
+              <div style="font-size:36px;margin-bottom:8px">📸</div>
+              <div style="font-size:14px;font-weight:600">Click to select image</div>
+              <div style="font-size:12.5px;color:var(--muted);margin-top:4px" id="fname">PNG, JPG — max 5 MB</div>
+            </div>
+            <input type="file" id="ssFile" name="payment_screenshot" accept="image/*"
+                   style="display:none" onchange="showName(this)" required/>
+            {% if form.payment_screenshot.errors %}<div class="err mt4">{{ form.payment_screenshot.errors.0 }}</div>{% endif %}
+          </div>
+
+          <button type="submit" class="btn btn-p btn-lg" style="width:100%;justify-content:center">
+            Submit Proof →
+          </button>
+        </form>
+      </div>
+
+      <a href="{% url 'my_registrations' %}" class="btn btn-o" style="margin-top:4px">← Back to My Registrations</a>
+    </div>
+  </main>
+</div>
+<script>
+function showName(i){
+  document.getElementById('fname').textContent = i.files[0]?.name || 'PNG, JPG — max 5 MB';
+}
+</script>
+{% endblock %}
